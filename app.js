@@ -1,7 +1,8 @@
 const express = require("express");
-const mongoose = require("mongoose");
 const cors = require("cors");
 require("dotenv").config();
+
+const connectDB = require("./connectDB"); // ✅ import
 
 const app = express();
 
@@ -9,20 +10,24 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-// MongoDB Connection
-mongoose.connect(process.env.MONGO_URI)
-.then(() => console.log("MongoDB Connected"))
-.catch((err) => console.log(err));
-
 // Routes
 const programRoutes = require("./ProgramMasterroute");
 app.use("/api/programs", programRoutes);
 
-app.get("/", async (req, res) => {
-  res.send("API RUNING....");
+app.get("/", (req, res) => {
+  res.send("API RUNNING....");
 });
 
-// Server
-app.listen(process.env.PORT, () => {
-  console.log(`Server running on port ${process.env.PORT}`);
-});
+// ✅ Start server ONLY after DB connects
+const startServer = async () => {
+  try {
+    await connectDB(); // ✅ important
+    app.listen(process.env.PORT, () => {
+      console.log(`Server running on port ${process.env.PORT}`);
+    });
+  } catch (error) {
+    console.log("DB connection failed:", error);
+  }
+};
+
+startServer();
